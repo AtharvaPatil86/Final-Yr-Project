@@ -1,0 +1,11 @@
+flask
+pinecone
+sentence-transformers
+groq
+
+
+requests
+beautifulsoup4
+urllib3
+
+
