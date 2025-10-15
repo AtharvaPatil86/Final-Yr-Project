@@ -4,10 +4,21 @@ const cookieParser = require('cookie-parser');
 const bcrypt = require('bcrypt');
 const path = require('path')
 const jwt = require('jsonwebtoken');
-const userModel = require('./user');
+const userModel = require('./User');
+const fs = require('fs')
 app.use(express.json());
 app.use(express.urlencoded({extended: true}));
 app.use(express.static(path.join(__dirname, '../vite-project/dist')));
+const cors = require("cors");
+
+app.use(
+  cors({
+    origin: "http://localhost:5173", 
+    credentials: true,
+  })
+);
+
+
 app.post('/query', async (req, res)=>{
   res.render();
  
@@ -26,7 +37,7 @@ app.post('/register', async(req, res)=>{
       })
       let token = jwt.sign({email:email, userid: user._id}, "secretkey");
       res.cookie("token", token);
-      res.send("created");
+      res.redirect('/');
     })
   })
 })
@@ -39,14 +50,27 @@ app.post('/login', async(req, res)=>{
   if(result){
     let token = jwt.sign({username: username, userid: user._id}, "secretkey");
     res.cookie("token", token);
-    res.status(200).send("Login Successful");
+    res.json({
+      success: true,
+      message: "Login Successful",
+      username: user.username,
+    })
   }
-  else res.redirect('/login');
+  else res.status(401).json({success: false, message: "Invalid credentials"});
  })
+});
+
+app.get('/login', (req, res)=>{
+
 })
+
 app.get('/logout', (req, res)=>{
   res.cookie("token", "");
-  res.redirect('/login');
+  res.status(200).json({success: true});
 })
+
+app.get(/.*/, (req, res) => {
+  res.sendFile(path.join(__dirname, '../vite-project/dist/index.html'));
+});
 
 app.listen(5000);
